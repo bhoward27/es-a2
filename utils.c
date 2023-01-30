@@ -4,7 +4,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
-#include <stdbool.h>
 
 #include "utils.h"
 #include "log.h"

@@ -1,6 +1,8 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
+#include <stdbool.h>
+
 #include "int_typedefs.h"
 #include "return_val.h"
 
