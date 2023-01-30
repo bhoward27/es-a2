@@ -7,4 +7,6 @@
 #define ERR_READ 3
 #define ERR_CLOSE 4
 
+#define COMMAND_SUCCESS 0
+
 #endif

@@ -1,29 +1,10 @@
 #include <assert.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <stdlib.h>
 
 #include "adc.h"
 #include "utils.h"
 #include "log.h"
-
-static bool initialized = false;
-
-void Adc_init(void)
-{
-    if (!initialized) {
-        // TODO: initalize.
-
-        initialized = true;
-    }
-}
-
-void Adc_cleanup(void)
-{
-    // TODO: cleanup.
-
-    initialized = false;
-}
 
 volt Adc_convertToVolts(adc_in x)
 {
@@ -36,8 +17,8 @@ adc_in Adc_readInput(uint8 analogInputNum)
 {
     assert(analogInputNum >= ADC_MIN_ANALOG_INPUT_NUM && analogInputNum <= ADC_MAX_ANALOG_INPUT_NUM);
 
-    char filePath[DEFAULT_STRING_LEN];
-    snprintf(filePath, DEFAULT_STRING_LEN, ADC_FILE_PATH_FORMAT, analogInputNum);
+    char filePath[MEDIUM_STRING_LEN];
+    snprintf(filePath, MEDIUM_STRING_LEN, ADC_FILE_PATH_FORMAT, analogInputNum);
     const int maxNumDigits = 4;
     char buffer[maxNumDigits + 1];
     // TODO: The closing and opening of the file might not be too efficient if I'm trying to read from the ADC a lot.

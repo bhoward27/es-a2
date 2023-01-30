@@ -55,7 +55,7 @@ int readFile(char* filePath, void* outData, size_t numBytesPerItem, size_t numIt
     return OK;
 }
 
-int runCommand(char* command)
+int runCommand(const char* command)
 {
     // Execute the shell command (output into pipe)
     FILE *pipe = popen(command, "r");
@@ -69,13 +69,10 @@ int runCommand(char* command)
     }
     // Get the exit code from the pipe; non-zero is an error:
     int exitCode = WEXITSTATUS(pclose(pipe));
-    if (exitCode != 0) {
-        perror("Unable to execute command:");
-        printf("  command:   %s\n", command);
-        printf("  exit code: %d\n", exitCode);
-        return 1;
+    if (exitCode != COMMAND_SUCCESS) {
+        SYS_WARN("Command '%s' failed with exit code '%d'.\n", command, exitCode);
     }
-    return OK;
+    return exitCode;
 }
 
 int64 getTimeInMs(void)
@@ -100,77 +97,77 @@ void sleepForMs(int64 delayInMs)
     nanosleep(&reqDelay, (struct timespec *) NULL);
 }
 
-void Gpio_exportPin(GpioNum pin, char* header, GpioNum linuxPin)
-{
-    // Set pin to GPIO mode.
-    char pinString[4];
-    snprintf(pinString, 4, "%u", pin);
-    char command[DEFAULT_STRING_LEN];
-    snprintf(command, DEFAULT_STRING_LEN, "%s %s.%s gpio", GPIO_CONFIG_PIN_PATH, header, pinString);
-    int64 sleepMs = 35;
-    int maxTries = 3;
-    int ret = !OK;
-    for (int i = 0; i < maxTries && ((ret = runCommand(command)) == !OK); i++) {
-        LOG(LOG_LEVEL_DEBUG, "Trying again in %lld ms...\n", sleepMs);
-        sleepForMs(sleepMs);
-    }
+// void Gpio_exportPin(GpioNum pin, char* header, GpioNum linuxPin)
+// {
+//     // Set pin to GPIO mode.
+//     char pinString[4];
+//     snprintf(pinString, 4, "%u", pin);
+//     char command[MEDIUM_STRING_LEN];
+//     snprintf(command, MEDIUM_STRING_LEN, "%s %s.%s gpio", GPIO_CONFIG_PIN_PATH, header, pinString);
+//     int64 sleepMs = 35;
+//     int maxTries = 3;
+//     int ret = !OK;
+//     for (int i = 0; i < maxTries && ((ret = runCommand(command)) == !OK); i++) {
+//         LOG(LOG_LEVEL_DEBUG, "Trying again in %lld ms...\n", sleepMs);
+//         sleepForMs(sleepMs);
+//     }
 
-    // Export the pin.
-    char linuxPinString[4];
-    snprintf(linuxPinString, 4, "%u", linuxPin);
-    for (int i = 0; i < maxTries && ((ret = overwriteFile(GPIO_EXPORT_PATH, linuxPinString, false)) != OK); i++) {
-        LOG(LOG_LEVEL_DEBUG, "Trying again in %lld ms...\n", sleepMs);
-        sleepForMs(sleepMs);
-    }
+//     // Export the pin.
+//     char linuxPinString[4];
+//     snprintf(linuxPinString, 4, "%u", linuxPin);
+//     for (int i = 0; i < maxTries && ((ret = overwriteFile(GPIO_EXPORT_PATH, linuxPinString, false)) != OK); i++) {
+//         LOG(LOG_LEVEL_DEBUG, "Trying again in %lld ms...\n", sleepMs);
+//         sleepForMs(sleepMs);
+//     }
 
-    if (ret == OK) {
-        LOG(LOG_LEVEL_DEBUG, "%s(%u, %s, %u) SUCCEEDED.\n\n", __func__, pin, header, linuxPin);
-    }
-    else {
-        LOG(LOG_LEVEL_DEBUG, "%s(%u, %s, %u) FAILED.\n\n", __func__, pin, header, linuxPin);
-    }
-}
+//     if (ret == OK) {
+//         LOG(LOG_LEVEL_DEBUG, "%s(%u, %s, %u) SUCCEEDED.\n\n", __func__, pin, header, linuxPin);
+//     }
+//     else {
+//         LOG(LOG_LEVEL_DEBUG, "%s(%u, %s, %u) FAILED.\n\n", __func__, pin, header, linuxPin);
+//     }
+// }
 
-void Gpio_configIo(GpioNum linuxPin, bool isInput)
-{
-    char filePath[DEFAULT_STRING_LEN];
-    snprintf(filePath, DEFAULT_STRING_LEN, "%s%u/direction", GPIO_PIN_PATH_PREFIX, linuxPin);
-    int64 sleepMs = 35;
-    int maxTries = 10;
-    int ret = !OK;
-    for (int i = 0; i < maxTries && ((ret = overwriteFile(filePath, ((isInput) ? "in" : "out"), false)) != OK); i++) {
-        LOG(LOG_LEVEL_DEBUG, "Trying again in %lld ms...\n", sleepMs);
-        sleepForMs(sleepMs);
-    }
-    if (ret == OK) {
-        LOG(LOG_LEVEL_DEBUG, "%s(%u, %u) SUCCEEDED.\n\n", __func__, linuxPin, isInput);
-    }
-    else {
-        LOG(LOG_LEVEL_DEBUG, "%s(%u, %u) FAILED.\n\n", __func__, linuxPin, isInput);
-    }
+// void Gpio_configIo(GpioNum linuxPin, bool isInput)
+// {
+//     char filePath[MEDIUM_STRING_LEN];
+//     snprintf(filePath, MEDIUM_STRING_LEN, "%s%u/direction", GPIO_PIN_PATH_PREFIX, linuxPin);
+//     int64 sleepMs = 35;
+//     int maxTries = 10;
+//     int ret = !OK;
+//     for (int i = 0; i < maxTries && ((ret = overwriteFile(filePath, ((isInput) ? "in" : "out"), false)) != OK); i++) {
+//         LOG(LOG_LEVEL_DEBUG, "Trying again in %lld ms...\n", sleepMs);
+//         sleepForMs(sleepMs);
+//     }
+//     if (ret == OK) {
+//         LOG(LOG_LEVEL_DEBUG, "%s(%u, %u) SUCCEEDED.\n\n", __func__, linuxPin, isInput);
+//     }
+//     else {
+//         LOG(LOG_LEVEL_DEBUG, "%s(%u, %u) FAILED.\n\n", __func__, linuxPin, isInput);
+//     }
 
-}
+// }
 
-void Gpio_initPin(GpioNum pin, char* header, GpioNum linuxPin, bool isInput)
-{
-    Gpio_exportPin(pin, header, linuxPin);
+// void Gpio_initPin(GpioNum pin, char* header, GpioNum linuxPin, bool isInput)
+// {
+//     Gpio_exportPin(pin, header, linuxPin);
 
-    LOG(LOG_LEVEL_DEBUG, "Calling Gpio_configIo()...\n");
-    Gpio_configIo(linuxPin, isInput);
-}
+//     LOG(LOG_LEVEL_DEBUG, "Calling Gpio_configIo()...\n");
+//     Gpio_configIo(linuxPin, isInput);
+// }
 
-int Gpio_readInput(GpioNum linuxPin)
-{
-    char filePath[DEFAULT_STRING_LEN];
-    snprintf(filePath, DEFAULT_STRING_LEN, "%s%u/value", GPIO_PIN_PATH_PREFIX, linuxPin);
+// int Gpio_readInput(GpioNum linuxPin)
+// {
+//     char filePath[MEDIUM_STRING_LEN];
+//     snprintf(filePath, MEDIUM_STRING_LEN, "%s%u/value", GPIO_PIN_PATH_PREFIX, linuxPin);
 
-    char valueString[2];
-    int res = readFile(filePath, (void*) valueString, sizeof(char), 1, false);
-    if (res == OK) {
-        // TODO: atoi also returns zero if the conversion failed! In this case, ideally would use a different method.
-        return atoi(valueString);
-    }
-    else {
-        return GPIO_READ_ERR;
-    }
-}
+//     char valueString[2];
+//     int res = readFile(filePath, (void*) valueString, sizeof(char), 1, false);
+//     if (res == OK) {
+//         // TODO: atoi also returns zero if the conversion failed! In this case, ideally would use a different method.
+//         return atoi(valueString);
+//     }
+//     else {
+//         return GPIO_READ_ERR;
+//     }
+// }
