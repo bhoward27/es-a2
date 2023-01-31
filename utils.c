@@ -97,6 +97,14 @@ void sleepForMs(int64 delayInMs)
     nanosleep(&reqDelay, (struct timespec *) NULL);
 }
 
+// Avoid calling this macro nakedly to avoid side-effects.
+#define MIN(a, b) ((a) < (b)) ? (a) : (b)
+
+int64 int64_min(int64 a, int64 b) {
+    // Safe to call macro here, since a and b have had a value copied to them already.
+    return MIN(a, b);
+}
+
 // void Gpio_exportPin(GpioNum pin, char* header, GpioNum linuxPin)
 // {
 //     // Set pin to GPIO mode.

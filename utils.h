@@ -16,6 +16,7 @@ int readFile(char* filePath, void* outData, size_t numBytesPerItem, size_t numIt
 int runCommand(const char* command);
 int64 getTimeInMs(void);
 void sleepForMs(int64 delayInMs);
+int64 int64_min(int64 a, int64 b);
 // void Gpio_exportPin(GpioNum pin, char* header, GpioNum linuxPin);
 // void Gpio_configIo(GpioNum linuxPin, bool isInput);
 // void Gpio_initPin(GpioNum pin, char* header, GpioNum linuxPin, bool isInput);

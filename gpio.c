@@ -1,11 +1,48 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "gpio.h"
 #include "utils.h"
 #include "log.h"
 #include "return_val.h"
+
+int Gpio_precheckSetPinMode(const char* header, const char* pin, const char* mode, size_t maxCharsToCompare)
+{
+    /**
+     * This function sets the pin's mode to mode only if the pin is not already set to that mode.
+     *
+     * It's recommended that mode be an array of size GPIO_MAX_MODE_LEN for more reliable string comparison internal to
+     * to this function.
+     */
+
+    assert(mode);
+
+    char currentMode[GPIO_MAX_MODE_LEN];
+    int queryRes = Gpio_queryPinMode(header, pin, currentMode, GPIO_MAX_MODE_LEN);
+    if (queryRes != COMMAND_SUCCESS) {
+        return queryRes;
+    }
+
+    // Unintended consequence of passing min(...) to strncmp() can be illustrated in an example:
+    // Suppose currentMode = "abc" and mode = "abz", and min(...) = 2. Then strncmp will incorrectly tell us that
+    // currentMode == mode.
+    // However, this unintended consequence is better than getting a segmentation fault, which could happen if passed
+    // a non-null-terminated string. This is why it's recommended that mode be of size
+    // GPIO_MAX_MODE_LEN = maxCharsToCompare.
+    int isDifferentMode = strncmp(mode, currentMode, int64_min(GPIO_MAX_MODE_LEN, maxCharsToCompare));
+    if (isDifferentMode) {
+        int setRes = Gpio_setPinMode(header, pin, mode);
+        if (setRes == COMMAND_SUCCESS) {
+            LOG(LOG_LEVEL_DEBUG,
+                "Changed GPIO mode for %s.%s from '%s' to '%s'.\n", header, pin, currentMode, mode);
+        }
+        return setRes;
+    }
+
+    return COMMAND_SUCCESS;
+}
 
 int Gpio_setPinMode(const char* header, const char* pin, const char* mode)
 {
@@ -20,7 +57,7 @@ int Gpio_setPinMode(const char* header, const char* pin, const char* mode)
     return res;
 }
 
-int Gpio_queryPinMode(const char* header, const char* pin, char* outMode, size_t modeMaxLen)
+int Gpio_queryPinMode(const char* header, const char* pin, char* outMode, size_t maxModeLen)
 {
     assert(header);
     assert(pin);
@@ -44,7 +81,7 @@ int Gpio_queryPinMode(const char* header, const char* pin, char* outMode, size_t
         SYS_WARN("Command '%s' failed with exit code '%d'.\n", command, exitCode);
     }
     else {
-        size_t maxLen = (modeMaxLen < MEDIUM_STRING_LEN) ? modeMaxLen : MEDIUM_STRING_LEN;
+        size_t maxLen = int64_min(maxModeLen, MEDIUM_STRING_LEN);
         size_t len = strnlen(output, maxLen - 1);
 
         // Want everything in output except the \n, which will the be the last character.
