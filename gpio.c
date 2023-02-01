@@ -2,11 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "gpio.h"
 #include "utils.h"
 #include "log.h"
 #include "return_val.h"
+
 
 int Gpio_precheckSetPinMode(const char* header, const char* pin, const char* mode, size_t maxCharsToCompare)
 {
@@ -39,6 +41,9 @@ int Gpio_precheckSetPinMode(const char* header, const char* pin, const char* mod
                 "Changed GPIO mode for %s.%s from '%s' to '%s'.\n", header, pin, currentMode, mode);
         }
         return setRes;
+    }
+    else {
+        LOG(LOG_LEVEL_DEBUG, "GPIO mode for %s.%s is already '%s'.\n", header, pin, mode);
     }
 
     return COMMAND_SUCCESS;
@@ -90,4 +95,81 @@ int Gpio_queryPinMode(const char* header, const char* pin, char* outMode, size_t
     }
 
     return exitCode;
+}
+
+void Gpio_exportPin(const char* linuxPin)
+{
+    // return overwriteFile(GPIO_EXPORT_PATH, linuxPin, false);
+    const int maxTries = 3;
+    const int64 sleepMs = 35;
+    int ret;
+    for (int i = 0; i < maxTries && ((ret = overwriteFile(GPIO_EXPORT_PATH, linuxPin, false)) != OK); i++) {
+        LOG(LOG_LEVEL_DEBUG, "Trying again in %lld ms...\n", sleepMs);
+        sleepForMs(sleepMs);
+    }
+
+    if (ret == OK) {
+        LOG(LOG_LEVEL_DEBUG, "%s(%s) SUCCEEDED.\n\n", __func__, linuxPin);
+    }
+    else {
+        LOG(LOG_LEVEL_DEBUG, "%s(%s) FAILED.\n\n", __func__, linuxPin);
+    }
+}
+
+void Gpio_configIo(const char* linuxPin, bool isInput)
+{
+    assert(linuxPin);
+
+    char filePath[MEDIUM_STRING_LEN];
+    snprintf(filePath, MEDIUM_STRING_LEN, "%s%s/direction", GPIO_PIN_PATH_PREFIX, linuxPin);
+    int64 sleepMs = 35;
+    int maxTries = 10;
+    int ret = !OK;
+    for (int i = 0; i < maxTries && ((ret = overwriteFile(filePath, ((isInput) ? "in" : "out"), false)) != OK); i++) {
+        LOG(LOG_LEVEL_DEBUG, "Trying again in %lld ms...\n", sleepMs);
+        sleepForMs(sleepMs);
+    }
+    if (ret == OK) {
+        LOG(LOG_LEVEL_DEBUG, "%s(%s, %u) SUCCEEDED.\n\n", __func__, linuxPin, isInput);
+    }
+    else {
+        LOG(LOG_LEVEL_DEBUG, "%s(%s, %u) FAILED.\n\n", __func__, linuxPin, isInput);
+    }
+}
+
+int Gpio_read(const char* linuxPin)
+{
+    assert(linuxPin);
+
+    char filePath[MEDIUM_STRING_LEN];
+    snprintf(filePath, MEDIUM_STRING_LEN, "%s%s/value", GPIO_PIN_PATH_PREFIX, linuxPin);
+
+    char valueString[2];
+    int res = readFile(filePath, (void*) valueString, sizeof(char), 1, false);
+    if (res == OK) {
+        // TODO: atoi also returns zero if the conversion failed! In this case, ideally would use a different method.
+        return atoi(valueString);
+    }
+    else {
+        return GPIO_READ_ERR;
+    }
+}
+
+void Gpio_write(const char* linuxPin, uint8 value)
+{
+    assert(value == 0 || value == 1);
+    assert(linuxPin);
+
+    char filePath[MEDIUM_STRING_LEN];
+    snprintf(filePath, MEDIUM_STRING_LEN, "%s%s/value", GPIO_PIN_PATH_PREFIX, linuxPin);
+    char val[2];
+    val[0] = (value) ? '1' : '0';
+    val[1] = '\0';
+    int res = overwriteFile(filePath, val, false);
+    if (res == OK) {
+        LOG(LOG_LEVEL_DEBUG, "%s(%p, %u) SUCCEEDED.\n", __func__, linuxPin, value);
+    }
+    else {
+        LOG(LOG_LEVEL_WARN, "%s(%p, %u) FAILED.\n", __func__, linuxPin, value);
+    }
 }

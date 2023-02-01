@@ -13,8 +13,22 @@
 #define GPIO_PIN_PATH_PREFIX "/sys/class/gpio/gpio"
 #define GPIO_CONFIG_PIN_PATH "/usr/bin/config-pin"
 
+typedef struct {
+    const char* header;
+    const char* pin;
+} GpioInfo;
+
+typedef struct {
+    GpioInfo gpioInfo;
+    const char* linuxPin;
+} GpioLinuxInfo;
+
+void Gpio_exportPin(const char* linuxPin);
 int Gpio_precheckSetPinMode(const char* header, const char* pin, const char* mode, size_t maxModeLen);
 int Gpio_setPinMode(const char* header, const char* pin, const char* mode);
 int Gpio_queryPinMode(const char* header, const char* pin, char* outMode, size_t maxModeLen);
+void Gpio_configIo(const char* linuxPin, bool isInput);
+int Gpio_read(const char* linuxPin);
+void Gpio_write(const char* linuxPin, uint8 value);
 
 #endif

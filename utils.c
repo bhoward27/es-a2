@@ -8,7 +8,7 @@
 #include "utils.h"
 #include "log.h"
 
-int overwriteFile(char* filePath, char* string, bool exitOnFailure)
+int overwriteFile(const char* filePath, const char* string, bool exitOnFailure)
 {
     assert(filePath != NULL);
     assert(string != NULL);

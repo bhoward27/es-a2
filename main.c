@@ -6,6 +6,7 @@
 #include "i2c.h"
 #include "return_val.h"
 #include "log.h"
+#include "digit_display.h"
 
 int main(int argc, char* args[]) {
     initLogLevel();
@@ -23,14 +24,7 @@ int main(int argc, char* args[]) {
     //     sleepForMs(NUM_MS_PER_S);
     // }
 
-    int res1 = Gpio_precheckSetPinMode(I2C_BUS_1_GPIO_HEADER, I2C_BUS_1_GPIO_DATA_PIN, "i2c", GPIO_MAX_MODE_LEN);
-    int res2 = Gpio_precheckSetPinMode(I2C_BUS_1_GPIO_HEADER, I2C_BUS_1_GPIO_CLOCK_PIN, "i2c", GPIO_MAX_MODE_LEN);
-    if (res1 == COMMAND_SUCCESS && res2 == COMMAND_SUCCESS) {
-        LOG(LOG_LEVEL_DEBUG, "Successfully set pins to i2c mode.\n");
-    }
-    else {
-        LOG(LOG_LEVEL_ERROR, "Failed to set pins to i2c mode.\n");
-    }
+    DigitDisplay_init();
 
     return 0;
 }

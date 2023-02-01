@@ -6,7 +6,7 @@ CC_C = $(CROSS_COMPILE)gcc
 CFLAGS = -std=gnu11 -D _POSIX_C_SOURCE=200809L -Og -Wall -Werror -Wshadow
 OFLAGS = $(CFLAGS) -c
 
-OBJS = main.o utils.o log.o adc.o i2c.o gpio.o
+OBJS = main.o utils.o log.o adc.o i2c.o gpio.o digit_display.o
 
 all: light_sampler
 
@@ -16,7 +16,7 @@ light_sampler: $(OBJS)
 # Makes new log level file if it doesn't exist.
 	./makeLogLevelFile.sh $(LOG_LEVEL_FILE)
 
-main.o: main.c return_val.h adc.o utils.o gpio.o i2c.o
+main.o: main.c return_val.h adc.o utils.o gpio.o i2c.o log.o digit_display.o
 	$(CC_C) $(OFLAGS) main.c
 
 utils.o: utils.c utils.h int_typedefs.h return_val.h log.o
@@ -33,6 +33,10 @@ i2c.o: i2c.c i2c.h
 
 gpio.o: gpio.c gpio.h return_val.h int_typedefs.h utils.o log.o
 	$(CC_C) $(OFLAGS) gpio.c
+
+digit_display.o: digit_display.c digit_display.h i2c.o utils.o
+	$(CC_C) $(OFLAGS) digit_display.c
+
 
 clean:
 	rm -f $(OUT_DIR)/light_sampler

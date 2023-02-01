@@ -11,7 +11,9 @@
 
 #define NUM_MS_PER_S 1000
 
-int overwriteFile(char* filePath, char* string, bool exitOnFailure);
+#define NUM_ELEMS(array) sizeof((array)) / sizeof((array)[0])
+
+int overwriteFile(const char* filePath, const char* string, bool exitOnFailure);
 int readFile(char* filePath, void* outData, size_t numBytesPerItem, size_t numItems, bool exitOnFailure);
 int runCommand(const char* command);
 int64 getTimeInMs(void);
