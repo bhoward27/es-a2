@@ -10,14 +10,13 @@
 #define I2C_BUS_1_GPIO_DATA_PIN "18"
 #define I2C_BUS_1_GPIO_CLOCK_PIN "17"
 
-// TODO: Should this go into an array, struct, no? what do?
-// probably struct with GpioInfo array as first element.
-// Also make header a member instead of element, since it's repeated otherwise.
-// So only array elements are the pins.
-#define I2C_BUS_1_GPIO_EXTENDER_ADDRESS "0x20"
+#define I2C_BUS_1_GPIO_EXTENDER_ADDRESS 0x20
 
-extern const GpioInfo I2c_bus1GpioInfo[I2C_BUS_NUM_PINS];
+#define I2C_WRITE_COMMAND "i2cset"
 
-void I2c_enable(const GpioInfo busGpioInfo[]);
+extern const GpioInfo I2c_bus1GpioPinInfo[I2C_BUS_NUM_PINS];
+
+void I2c_enable(const GpioInfo busGpioInfo[], uint8 busNumber, uint8 gpioExtenderAddress);
+int I2c_write(uint8 busNumber, uint8 deviceAddress, uint8 registerAddress, uint8 value);
 
 #endif
