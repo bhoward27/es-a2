@@ -105,6 +105,15 @@ int64 int64_min(int64 a, int64 b) {
     return MIN(a, b);
 }
 
+void busyWaitForMs(int64 delayInMs)
+{
+    int64 startTime = getTimeInMs();
+    int64 currentDuration = 0;
+    while (currentDuration <= delayInMs) {
+        currentDuration = getTimeInMs() - startTime;
+    }
+}
+
 // void Gpio_exportPin(GpioNum pin, char* header, GpioNum linuxPin)
 // {
 //     // Set pin to GPIO mode.

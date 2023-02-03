@@ -44,8 +44,9 @@ typedef struct {
 } DigitDisplayPattern;
 
 extern const DigitDisplayPattern DigitDisplay_digitPatterns[10];
+// ************** END OF BIT PATTERNS ****************
 
-// ******************************
+#define DIGIT_DISPLAY_MAX_NUM 99
 
 extern const GpioLinuxInfo DigitDisplay_gpioLeft;
 extern const GpioLinuxInfo DigitDisplay_gpioRight;
@@ -58,5 +59,8 @@ typedef enum {
 void DigitDisplay_init(void);
 void DigitDisplay_enable(DigitDisplayHalf displayHalf);
 void DigitDisplay_disable(DigitDisplayHalf displayHalf);
+void DigitDisplay_digit(uint8 digit);
+void DigitDisplay_allSegmentsOff(void);
+void DigitDisplay_number(uint8 number);
 
 #endif
