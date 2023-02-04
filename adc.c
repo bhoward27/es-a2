@@ -40,7 +40,7 @@ int Adc_readInput(uint8 analogInputNum, adc_in* pAdcInput)
     }
 
     if (*pAdcInput < ADC_MIN_IN || *pAdcInput > ADC_MAX_IN) {
-        LOG(LOG_LEVEL_ERROR, "Read invalid ADC input '%u' from '%s'.\n", *pAdcInput, filePath);
+        LOG(LOG_LEVEL_WARN, "Read invalid ADC input '%u' from '%s'.\n", *pAdcInput, filePath);
         return ERR_INVALID_ADC_INPUT;
     }
 

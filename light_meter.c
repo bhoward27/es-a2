@@ -22,7 +22,10 @@ void LightMeter_cleanup(void)
     initialized = false;
 }
 
-volt LightMeter_read(void)
+adc_in LightMeter_read(void)
 {
-
+    // Set to an invalid value to make it easier to check for errors.
+    adc_in brightness = ADC_MAX_IN * 2;
+    Adc_readInput(LIGHT_METER_ANALOG_INPUT_NUM, &brightness);
+    return brightness;
 }
