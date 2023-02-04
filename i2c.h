@@ -12,11 +12,12 @@
 
 #define I2C_BUS_1_GPIO_EXTENDER_ADDRESS 0x20
 
-#define I2C_WRITE_COMMAND "i2cset"
+#define I2C_DEV_FILE_PATH_PREFIX "/dev/i2c-"
 
 extern const GpioInfo I2c_bus1GpioPinInfo[I2C_BUS_NUM_PINS];
 
-void I2c_enable(const GpioInfo busGpioInfo[], uint8 busNumber, uint8 gpioExtenderAddress);
-int I2c_write(uint8 busNumber, uint8 deviceAddress, uint8 registerAddress, uint8 value);
+int I2c_enable(const GpioInfo busGpioInfo[], uint8 busNumber, uint8 gpioExtenderAddress);
+int I2c_write(int i2cFd, uint8 registerAddress, uint8 value);
+int I2c_openBus(uint8 busNumber, uint8 deviceAddress);
 
 #endif

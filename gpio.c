@@ -166,10 +166,7 @@ void Gpio_write(const char* linuxPin, uint8 value)
     val[0] = (value) ? '1' : '0';
     val[1] = '\0';
     int res = overwriteFile(filePath, val, false);
-    if (res == OK) {
-        LOG(LOG_LEVEL_DEBUG, "%s(%p, %u) SUCCEEDED.\n", __func__, linuxPin, value);
-    }
-    else {
+    if (res != OK) {
         LOG(LOG_LEVEL_WARN, "%s(%p, %u) FAILED.\n", __func__, linuxPin, value);
     }
 }

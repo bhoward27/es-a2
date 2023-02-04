@@ -1,4 +1,9 @@
 #include <stdbool.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/i2c-dev.h>
+#include <stdio.h>
 
 #include "i2c.h"
 #include "utils.h"
@@ -10,50 +15,64 @@ const GpioInfo I2c_bus1GpioPinInfo[I2C_BUS_NUM_PINS] = {
     {I2C_BUS_1_GPIO_HEADER, I2C_BUS_1_GPIO_CLOCK_PIN}
 };
 
-// TODO: Change I2C to write directly to files instead of using i2cset command. Would likely be more efficient.
-// See Brian's I2C guide for how to do that.
-void I2c_enable(const GpioInfo busGpioInfo[], uint8 busNumber, uint8 gpioExtenderAddress)
+int I2c_enable(const GpioInfo busGpioInfo[], uint8 busNumber, uint8 gpioExtenderAddress)
 {
     int numSuccessful = 0;
     for (int i = 0; i < I2C_BUS_NUM_PINS; i++) {
         int res = Gpio_precheckSetPinMode(busGpioInfo[i].header, busGpioInfo[i].pin, "i2c", GPIO_MAX_MODE_LEN);
         if (res == COMMAND_SUCCESS) numSuccessful++;
     }
-    // if (numSuccessful == I2C_BUS_NUM_PINS) {
-    //     LOG(LOG_LEVEL_DEBUG, "%s(%p) SUCCEEDED.\n", __func__, (void*) busGpioInfo);
-    // }
-    // else {
-    //     LOG(LOG_LEVEL_WARN, "%s(%p) FAILED.\n", __func__, (void*) busGpioInfo);
-    // }
-    if (numSuccessful != I2C_BUS_NUM_PINS) return;
+    if (numSuccessful != I2C_BUS_NUM_PINS) {
+        LOG(LOG_LEVEL_WARN, "%s(%p, %u, %u) FAILED.\n", __func__, busGpioInfo, busNumber, gpioExtenderAddress);
+    }
+    if (numSuccessful != I2C_BUS_NUM_PINS) return -1;
+
+    int i2cFd = I2c_openBus(busNumber, gpioExtenderAddress);
 
     // Enable output on all pins for GPIO extender.
     numSuccessful = 0;
     for (uint8 i = 0; i < 2; i++) {
         // Write zeroes to register address 0x00 and 0x01. (NOTE: Zed Cape Red would need different addresses).
-        int res = I2c_write(busNumber, gpioExtenderAddress, i, 0x00);
-        if (res == COMMAND_SUCCESS) numSuccessful++;
+        int res = I2c_write(i2cFd, i, 0x00);
+        if (res == OK) numSuccessful++;
     }
     if (numSuccessful == I2C_BUS_NUM_PINS) {
         LOG(LOG_LEVEL_DEBUG, "%s(%p, %u, %u) SUCCEEDED.\n", __func__, busGpioInfo, busNumber, gpioExtenderAddress);
     }
     else {
         LOG(LOG_LEVEL_WARN, "%s(%p, %u, %u) FAILED.\n", __func__, busGpioInfo, busNumber, gpioExtenderAddress);
+        return -1;
     }
+
+    return i2cFd;
 }
 
-
-int I2c_write(uint8 busNumber, uint8 deviceAddress, uint8 registerAddress, uint8 value)
+int I2c_openBus(uint8 busNumber, uint8 deviceAddress)
 {
-    char command[MEDIUM_STRING_LEN];
-    int snprintf(char *str, size_t size, const char *format, ...);
-    snprintf(command,
-             MEDIUM_STRING_LEN,
-             "%s -y %u 0x%x 0x%x 0x%x",
-             I2C_WRITE_COMMAND,
-             busNumber,
-             deviceAddress,
-             registerAddress,
-             value);
-    return runCommand(command);
+    char busFilePath[MEDIUM_STRING_LEN];
+    snprintf(busFilePath, MEDIUM_STRING_LEN, "%s%u", I2C_DEV_FILE_PATH_PREFIX, busNumber);
+    int i2cFileDesc = open(busFilePath, O_RDWR);
+    if (i2cFileDesc == -1) {
+        SYS_DIE("Failed to open '%s'.\n", busFilePath);
+    }
+
+    int result = ioctl(i2cFileDesc, I2C_SLAVE, deviceAddress);
+    if (result < 0) {
+        SYS_DIE("Failed to set I2C device 0x%x to slave address.\n", deviceAddress);
+    }
+
+    return i2cFileDesc;
+}
+
+int I2c_write(int i2cFd, uint8 registerAddress, uint8 value)
+{
+    uint8 buffer[2];
+    buffer[0] = registerAddress;
+    buffer[1] = value;
+    int res = write(i2cFd, buffer, sizeof(buffer));
+    if (res != sizeof(buffer)) {
+        SYS_WARN("%s(%d, %u, %u) failed.\n", __func__, i2cFd, registerAddress, value);
+        return ERR_WRITE;
+    }
+    return OK;
 }

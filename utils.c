@@ -42,6 +42,7 @@ int readFile(char* filePath, void* outData, size_t numBytesPerItem, size_t numIt
     }
 
     size_t res = fread(outData, numBytesPerItem, numItems, pFile);
+
     if (res < numItems) {
         FILE_READ_ERR(filePath, exitOnFailure);
         return ERR_READ;

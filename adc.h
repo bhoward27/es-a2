@@ -18,6 +18,6 @@ typedef uint16 adc_in;
 typedef float volt;
 
 volt Adc_convertToVolts(adc_in x);
-adc_in Adc_readInput(uint8 analogInputNum);
+int Adc_readInput(uint8 analogInputNum, adc_in* pAdcInput);
 
 #endif

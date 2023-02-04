@@ -30,14 +30,21 @@ typedef enum {
     exit(EXIT_FAILURE);
 
 #define SYS_WARN(format, ...) \
-    char err[LOG_LEN]; \
+    /* This can cause variable shadowing. */char err[LOG_LEN]; \
     snprintf(err, LOG_LEN, "%s (errno = %d)", __func__, errno); \
     if (getLogLevel() >= LOG_LEVEL_WARN) \
         perror(err); \
     LOG(LOG_LEVEL_WARN, format __VA_OPT__(,) __VA_ARGS__);
 
+#define SYS_ERR(format, ...) \
+    /* This can cause variable shadowing. */char err[LOG_LEN]; \
+    snprintf(err, LOG_LEN, "%s (errno = %d)", __func__, errno); \
+    if (getLogLevel() >= LOG_LEVEL_WARN) \
+        perror(err); \
+    LOG(LOG_LEVEL_ERROR, format __VA_OPT__(,) __VA_ARGS__);
+
 #define SYS_DIE(format, ...) \
-    SYS_WARN(format __VA_OPT__(,) __VA_ARGS__); \
+    SYS_ERR(format __VA_OPT__(,) __VA_ARGS__); \
     exit(EXIT_FAILURE);
 
 #define FILE_OPEN_ERR(fileName, die) \
