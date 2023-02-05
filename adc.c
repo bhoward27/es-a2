@@ -6,7 +6,7 @@
 #include "utils.h"
 #include "log.h"
 
-volt Adc_convertToVolts(adc_in x)
+volt Adc_convertToVolts(double x)
 {
     assert(x >= ADC_MIN_IN && x <= ADC_MAX_IN);
 

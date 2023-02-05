@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdatomic.h>
 
 #include "adc.h"
 #include "utils.h"
@@ -8,48 +9,61 @@
 #include "log.h"
 #include "digit_display.h"
 #include "adc_buffer.h"
+#include "periodTimer.h"
+#include "console.h"
+#include "light_sampler.h"
+#include "shutdown.h"
 
 int main(int argc, char* args[]) {
     initLogLevel();
-    printf("Hello embedded world!\n");
-
     AdcBuffer buffer;
-    AdcBuffer* pBuffer = &buffer;
-    AdcBuffer_init(pBuffer, 10);
-    for (uint64 i = 0; i < pBuffer->capacity - 1; i++) {
-        AdcBuffer_add(pBuffer, i);
-    }
-    AdcBuffer_printAll(pBuffer);
-    // Add to already full buffer. Should be no problem, just overwrite first element.
+    AdcBuffer_init(&buffer, 1000);
+    Period_init();
+    LightSampler_init(&buffer);
+    Console_init(&buffer);
 
-    for (uint64 i = 0; i < 15; i++) {
-        AdcBuffer_add(pBuffer, pBuffer->size + i);
-        printf("Added %u.\n", (adc_in) (pBuffer->size + i));
-        AdcBuffer_printAll(pBuffer);
-    }
+    // TODO: Remove.
+    sleepForMs(10 * NUM_MS_PER_S);
+    requestShutdown();
 
-    // Try increasing buffer size.
-    AdcBuffer_resize(pBuffer, 1);
-    printf("Resized to 1.\n");
-    AdcBuffer_printAll(pBuffer);
-    AdcBuffer_add(pBuffer, 77);
-    printf("Added 77.\n");
-    AdcBuffer_printAll(pBuffer);
-    AdcBuffer_add(pBuffer, 55);
-    printf("Added 55.\n");
-    AdcBuffer_printAll(pBuffer);
 
-    // Try decreasing buffer size.
-    AdcBuffer_resize(pBuffer, 10);
-    printf("Resized to 10.\n");
-    AdcBuffer_printAll(pBuffer);
+    // AdcBuffer buffer;
+    // AdcBuffer* pBuffer = &buffer;
+    // AdcBuffer_init(pBuffer, 10);
+    // for (uint64 i = 0; i < pBuffer->capacity - 1; i++) {
+    //     AdcBuffer_add(pBuffer, i);
+    // }
+    // AdcBuffer_printAll(pBuffer);
+    // // Add to already full buffer. Should be no problem, just overwrite first element.
 
-    // Try "resizing" but size is the same as current size.
-    AdcBuffer_resize(pBuffer, 9);
-    printf("Resized to 9.\n");
-    AdcBuffer_printAll(pBuffer);
+    // for (uint64 i = 0; i < 15; i++) {
+    //     AdcBuffer_add(pBuffer, pBuffer->size + i);
+    //     printf("Added %u.\n", (adc_in) (pBuffer->size + i));
+    //     AdcBuffer_printAll(pBuffer);
+    // }
 
-    AdcBuffer_cleanup(pBuffer);
+    // // Try increasing buffer size.
+    // AdcBuffer_resize(pBuffer, 1);
+    // printf("Resized to 1.\n");
+    // AdcBuffer_printAll(pBuffer);
+    // AdcBuffer_add(pBuffer, 77);
+    // printf("Added 77.\n");
+    // AdcBuffer_printAll(pBuffer);
+    // AdcBuffer_add(pBuffer, 55);
+    // printf("Added 55.\n");
+    // AdcBuffer_printAll(pBuffer);
+
+    // // Try decreasing buffer size.
+    // AdcBuffer_resize(pBuffer, 10);
+    // printf("Resized to 10.\n");
+    // AdcBuffer_printAll(pBuffer);
+
+    // // Try "resizing" but size is the same as current size.
+    // AdcBuffer_resize(pBuffer, 9);
+    // printf("Resized to 9.\n");
+    // AdcBuffer_printAll(pBuffer);
+
+    // AdcBuffer_cleanup(pBuffer);
 
 
     // // Read from analog input once per second.
@@ -86,6 +100,11 @@ int main(int argc, char* args[]) {
     // }
 
     // DigitDisplay_init();
+
+    Console_waitForShutdown();
+    LightSampler_waitForShutdown();
+    Period_cleanup();
+    AdcBuffer_cleanup(&buffer);
 
     return 0;
 }

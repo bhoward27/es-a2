@@ -15,9 +15,9 @@
 #define ADC_MAX_ANALOG_INPUT_NUM 6
 
 typedef uint16 adc_in;
-typedef float volt;
+typedef double volt;
 
-volt Adc_convertToVolts(adc_in x);
+volt Adc_convertToVolts(double x);
 int Adc_readInput(uint8 analogInputNum, adc_in* pAdcInput);
 
 #endif
