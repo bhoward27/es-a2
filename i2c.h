@@ -19,5 +19,6 @@ extern const GpioInfo I2c_bus1GpioPinInfo[I2C_BUS_NUM_PINS];
 int I2c_enable(const GpioInfo busGpioInfo[], uint8 busNumber, uint8 gpioExtenderAddress);
 int I2c_write(int i2cFd, uint8 registerAddress, uint8 value);
 int I2c_openBus(uint8 busNumber, uint8 deviceAddress);
+int I2c_closeBus(int busFd);
 
 #endif

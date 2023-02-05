@@ -36,7 +36,7 @@ i2c.o: i2c.c i2c.h int_typedefs.h utils.o log.o gpio.o
 gpio.o: gpio.c gpio.h return_val.h int_typedefs.h utils.o log.o
 	$(CC_C) $(OFLAGS) gpio.c
 
-digit_display.o: digit_display.c digit_display.h i2c.o utils.o log.o gpio.o
+digit_display.o: digit_display.c digit_display.h i2c.o utils.o log.o gpio.o shutdown.o adc_stats.o adc_buffer.o
 	$(CC_C) $(OFLAGS) digit_display.c
 
 adc_buffer.o: adc_buffer.c adc_buffer.h adc.o log.o

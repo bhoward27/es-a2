@@ -2,6 +2,7 @@
 #define DIGIT_DISPLAY_H_
 
 #include "gpio.h"
+#include "adc_buffer.h"
 
 #define DIGIT_DISPLAY_GPIO_HEADER "p8"
 #define DIGIT_DISPLAY_LEFT_GPIO_PIN "26"
@@ -56,11 +57,7 @@ typedef enum {
     DIGIT_DISPLAY_RIGHT
 } DigitDisplayHalf;
 
-void DigitDisplay_init(void);
-void DigitDisplay_enable(DigitDisplayHalf displayHalf);
-void DigitDisplay_disable(DigitDisplayHalf displayHalf);
-void DigitDisplay_digit(uint8 digit);
-void DigitDisplay_allSegmentsOff(void);
-void DigitDisplay_number(uint8 number);
+void DigitDisplay_init(AdcBuffer* pBuffer);
+void DigitDisplay_waitForShutdown(void);
 
 #endif

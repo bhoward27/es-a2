@@ -1,11 +1,14 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "digit_display.h"
 #include "i2c.h"
 #include "utils.h"
 #include "log.h"
+#include "shutdown.h"
+#include "adc_stats.h"
 
 const DigitDisplayPattern DigitDisplay_digitPatterns[10] = {
     // 0
@@ -91,12 +94,20 @@ const GpioLinuxInfo DigitDisplay_gpioRight = {
     DIGIT_DISPLAY_RIGHT_GPIO_LINUX_PIN
 };
 
+static void DigitDisplay_drive(DigitDisplayHalf displayHalf, uint8 value);
+static void DigitDisplay_enable(DigitDisplayHalf displayHalf);
+static void DigitDisplay_disable(DigitDisplayHalf displayHalf);
+static void DigitDisplay_digit(uint8 digit);
+static void DigitDisplay_allSegmentsOff(void);
+static void DigitDisplay_number(uint8 number);
+static void* DigitDisplay_run(void* args);
+static void DigitDisplay_off(void);
+
 static bool initialized = false;
 static int i2cFd = -1;
+static pthread_t thread;
 
-static void DigitDisplay_drive(DigitDisplayHalf displayHalf, uint8 value);
-
-void DigitDisplay_init(void)
+void DigitDisplay_init(AdcBuffer* pBuffer)
 {
     if (initialized) return;
 
@@ -109,29 +120,57 @@ void DigitDisplay_init(void)
 
     i2cFd = I2c_enable(I2c_bus1GpioPinInfo, DIGIT_DISPLAY_I2C_BUS_NUMBER, I2C_BUS_1_GPIO_EXTENDER_ADDRESS);
 
-    // Disable both segments to make sure we start clean.
-    DigitDisplay_disable(DIGIT_DISPLAY_LEFT);
-    DigitDisplay_disable(DIGIT_DISPLAY_RIGHT);
+    // Start clean.
+    DigitDisplay_off();
 
-    // // TODO: Remove.
-    // const int64 holdTimeMs = 1000;
-    // for (uint8 i = 0; i <= 105; i++) {
-    //     LOG(LOG_LEVEL_DEBUG, "%u\n", i);
-    //     int64 currentDuration = 0;
-    //     int64 startTime = getTimeInMs();
-    //     while (currentDuration <= holdTimeMs) {
-    //         DigitDisplay_number(i);
-    //         currentDuration = getTimeInMs() - startTime;
-    //     }
-
-    // }
-    // DigitDisplay_disable(DIGIT_DISPLAY_LEFT);
-    // DigitDisplay_disable(DIGIT_DISPLAY_RIGHT);
-
-    // Done with I2C now.
-    close(i2cFd);
+    int res = pthread_create(&thread, NULL, DigitDisplay_run, pBuffer);
+    if (res != 0) {
+        SYS_DIE("pthread_create failed.\n");
+    }
 
     initialized = true;
+}
+
+static void DigitDisplay_off(void)
+{
+    DigitDisplay_allSegmentsOff();
+    DigitDisplay_disable(DIGIT_DISPLAY_LEFT);
+    DigitDisplay_disable(DIGIT_DISPLAY_RIGHT);
+}
+
+static void* DigitDisplay_run(void* args)
+{
+    AdcBuffer* pBuffer = (AdcBuffer*) args;
+    const int64 waitTimeMs = 100;
+    uint8 dips = 0;
+    int64 startTimeMs = getTimeInMs() - waitTimeMs; // Subtraction needed to trigger update to dips on first iteration.
+
+    while (!isShutdownRequested()) {
+        if (getTimeInMs() - startTimeMs >= waitTimeMs) {
+            uint64 numSamples;
+            adc_in* samples = AdcBuffer_getSamples(pBuffer, &numSamples);
+            dips = AdcStats_dips(samples, numSamples, AdcBuffer_getCurrentMean(pBuffer));
+            free(samples);
+            startTimeMs = getTimeInMs();
+        }
+        DigitDisplay_number(dips);
+    }
+
+    return NULL;
+}
+
+void DigitDisplay_waitForShutdown(void)
+{
+    int res = pthread_join(thread, NULL);
+    if (res != 0) {
+        SYS_WARN("pthread_join failed.\n");
+    }
+
+    DigitDisplay_off();
+    I2c_closeBus(i2cFd);
+    // TODO: I should set back all the other I2C settings as well (basically undo whatever I did in I2c_enable().
+
+    initialized = false;
 }
 
 static void DigitDisplay_drive(DigitDisplayHalf displayHalf, uint8 value)
@@ -149,18 +188,18 @@ static void DigitDisplay_drive(DigitDisplayHalf displayHalf, uint8 value)
     }
 }
 
-void DigitDisplay_enable(DigitDisplayHalf displayHalf)
+static void DigitDisplay_enable(DigitDisplayHalf displayHalf)
 {
     DigitDisplay_drive(displayHalf, 1);
 }
 
-void DigitDisplay_disable(DigitDisplayHalf displayHalf)
+static void DigitDisplay_disable(DigitDisplayHalf displayHalf)
 {
     DigitDisplay_drive(displayHalf, 0);
 }
 
 // This function assumes the appropriate display half and I2C bus have already been fully enabled.
-void DigitDisplay_digit(uint8 digit)
+static void DigitDisplay_digit(uint8 digit)
 {
     assert(digit >= 0 && digit <= 9);
 
@@ -174,7 +213,7 @@ void DigitDisplay_digit(uint8 digit)
 }
 
 // This function assumes the appropriate display half and I2C bus have already been fully enabled.
-void DigitDisplay_allSegmentsOff(void)
+static void DigitDisplay_allSegmentsOff(void)
 {
     I2c_write(i2cFd,
               DIGIT_DISPLAY_TOP_I2C_REGISTER_ADDRESS,
@@ -186,7 +225,7 @@ void DigitDisplay_allSegmentsOff(void)
 }
 
 // Display a number from 0 to 99.
-void DigitDisplay_number(uint8 number)
+static void DigitDisplay_number(uint8 number)
 {
     if (number > DIGIT_DISPLAY_MAX_NUM) {
         number = DIGIT_DISPLAY_MAX_NUM;

@@ -64,6 +64,16 @@ int I2c_openBus(uint8 busNumber, uint8 deviceAddress)
     return i2cFileDesc;
 }
 
+int I2c_closeBus(int busFd)
+{
+    int res = close(busFd);
+    if (res == -1) {
+        SYS_WARN("Failed to close I2C bus with file descriptor = %d.\n", busFd);
+        return ERR_CLOSE;
+    }
+    return OK;
+}
+
 int I2c_write(int i2cFd, uint8 registerAddress, uint8 value)
 {
     uint8 buffer[2];
