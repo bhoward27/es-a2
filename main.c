@@ -13,6 +13,7 @@
 #include "console.h"
 #include "light_sampler.h"
 #include "shutdown.h"
+#include "udp_server.h"
 
 int main(int argc, char* args[]) {
     initLogLevel();
@@ -22,11 +23,13 @@ int main(int argc, char* args[]) {
     LightSampler_init(&buffer);
     DigitDisplay_init(&buffer);
     Console_init(&buffer);
+    UdpServer_init(&buffer);
 
     // TODO: Remove.
-    sleepForMs(10 * NUM_MS_PER_S);
-    requestShutdown();
+    // sleepForMs(10 * NUM_MS_PER_S);
+    // requestShutdown();
 
+    UdpServer_waitForShutdown();
     Console_waitForShutdown();
     DigitDisplay_waitForShutdown();
     LightSampler_waitForShutdown();

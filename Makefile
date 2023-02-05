@@ -5,10 +5,10 @@ CROSS_COMPILE = arm-linux-gnueabihf-
 CC_C = $(CROSS_COMPILE)gcc
 # Use -g, not -Og
 # Just keep it at -g since will need to run valgrind during demo.
-CFLAGS = -std=gnu11 -D _POSIX_C_SOURCE=200809L -pthread -g -Wall -Werror -Wshadow
+CFLAGS = -std=gnu11 -D _POSIX_C_SOURCE=200809L -pthread -g -Wall -Werror -Wshadow -Wno-error=unused-variable
 OFLAGS = $(CFLAGS) -c
 
-OBJS = main.o utils.o log.o adc.o i2c.o gpio.o digit_display.o adc_buffer.o light_meter.o potentiometer.o adc_stats.o console.o light_sampler.o shutdown.o periodTimer.o
+OBJS = main.o utils.o log.o adc.o i2c.o gpio.o digit_display.o adc_buffer.o light_meter.o potentiometer.o adc_stats.o console.o light_sampler.o shutdown.o periodTimer.o udp_server.o
 
 all: light_sampler
 
@@ -18,7 +18,7 @@ light_sampler: $(OBJS)
 # Makes new log level file if it doesn't exist.
 	./makeLogLevelFile.sh $(LOG_LEVEL_FILE)
 
-main.o: main.c return_val.h adc.o utils.o gpio.o i2c.o log.o digit_display.o adc_buffer.o periodTimer.o console.o light_sampler.o shutdown.o
+main.o: main.c return_val.h adc.o utils.o gpio.o i2c.o log.o digit_display.o adc_buffer.o periodTimer.o console.o light_sampler.o shutdown.o udp_server.o
 	$(CC_C) $(OFLAGS) main.c
 
 utils.o: utils.c utils.h int_typedefs.h return_val.h log.o
@@ -62,6 +62,9 @@ shutdown.o: shutdown.c shutdown.h
 
 periodTimer.o: periodTimer.c periodTimer.h
 	$(CC_C) $(OFLAGS) periodTimer.c
+
+udp_server.o: udp_server.c udp_server.h adc_buffer.o shutdown.o log.o
+	$(CC_C) $(OFLAGS) udp_server.c
 
 clean:
 	rm -f $(OUT_DIR)/light_sampler
