@@ -57,6 +57,27 @@ uint64 AdcBuffer_getSize(AdcBuffer* pBuffer)
     return size;
 }
 
+uint64 AdcBuffer_getMaxSize(AdcBuffer* pBuffer)
+{
+    uint64 maxSize = 0;
+
+    int lock_res = pthread_mutex_lock(&pBuffer->mutex);
+    {
+        if (lock_res != 0) {
+            SYS_DIE("pthread_mutex_lock failed with rc = %d.\n", lock_res);
+        }
+
+        _AdcBuffer_verify(pBuffer);
+        maxSize = pBuffer->capacity - 1;
+    }
+    int unlock_res = pthread_mutex_unlock(&pBuffer->mutex);
+    if (unlock_res != 0) {
+        SYS_DIE("pthread_mutex_unlock failed with rc = %d.\n", unlock_res);
+    }
+
+    return maxSize;
+}
+
 uint64 AdcBuffer_getTotalNumSamplesTaken(AdcBuffer* pBuffer)
 {
     uint64 totalNumSamplesTaken = 0;

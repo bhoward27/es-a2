@@ -22,7 +22,9 @@ typedef struct {
 
 void AdcBuffer_init(AdcBuffer* pBuffer, uint64 n);
 uint64 AdcBuffer_getSize(AdcBuffer* pBuffer);
+uint64 AdcBuffer_getMaxSize(AdcBuffer* pBuffer);
 adc_in* AdcBuffer_getSamples(AdcBuffer* pBuffer, uint64* outNumSamples);
+uint64 AdcBuffer_getTotalNumSamplesTaken(AdcBuffer* pBuffer);
 double AdcBuffer_getCurrentMean(AdcBuffer* pBuffer);
 void AdcBuffer_resize(AdcBuffer* pBuffer, uint64 m);
 adc_in AdcBuffer_get(AdcBuffer* pBuffer, uint64 i);

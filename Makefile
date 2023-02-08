@@ -63,7 +63,7 @@ shutdown.o: shutdown.c shutdown.h
 periodTimer.o: periodTimer.c periodTimer.h
 	$(CC_C) $(OFLAGS) periodTimer.c
 
-udp_server.o: udp_server.c udp_server.h adc_buffer.o shutdown.o log.o
+udp_server.o: udp_server.c udp_server.h adc_buffer.o shutdown.o log.o adc_stats.h
 	$(CC_C) $(OFLAGS) udp_server.c
 
 clean:
