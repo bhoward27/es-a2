@@ -1,3 +1,4 @@
+// Implements core functions related to reading input from the ADC (Analog to Digital Converter).
 #ifndef ADC_H_
 #define ADC_H_
 

@@ -1,3 +1,4 @@
+// Defines some common return values.
 #ifndef RETURN_VAL_H_
 #define RETURN_VAL_H_
 

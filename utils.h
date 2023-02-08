@@ -1,3 +1,5 @@
+// Implements various convenience functions.
+
 #ifndef UTILS_H_
 #define UTILS_H_
 
@@ -20,9 +22,5 @@ int64 getTimeInMs(void);
 void sleepForMs(int64 delayInMs);
 void busyWaitForMs(int64 delayInMs);
 int64 int64_min(int64 a, int64 b);
-// void Gpio_exportPin(GpioNum pin, char* header, GpioNum linuxPin);
-// void Gpio_configIo(GpioNum linuxPin, bool isInput);
-// void Gpio_initPin(GpioNum pin, char* header, GpioNum linuxPin, bool isInput);
-// int Gpio_readInput(GpioNum linuxPin);
 
 #endif

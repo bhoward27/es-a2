@@ -1,3 +1,5 @@
+// This module drives the 14 segment display. It uses the display to show the current number of dips, which is
+// updated every tenth of second.
 #ifndef DIGIT_DISPLAY_H_
 #define DIGIT_DISPLAY_H_
 

@@ -1,3 +1,7 @@
+// This module implements convenience logging macros. Essentially, it's like using printf(), but it automatically
+// tells you the function and line number that this macro call came from. You can also control the verbosity of the
+// logs you want to see by changing logLevel.txt to a lower value. Also useful because then you don't have to
+// delete calls for debugging logs/prints -- you can just lower your log level when you don't want to see those.
 #ifndef LOG_H_
 #define LOG_H_
 

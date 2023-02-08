@@ -51,7 +51,6 @@ void* Console_run(void* args)
         Period_statistics_t jitterStats;
         Period_getStatisticsAndClear(PERIOD_EVENT_SAMPLE_LIGHT, &jitterStats);
 
-        // TODO: Print all the above info in a printf() call.
         printf(
             "Samples/s = %d\t\tPot Value = %hu\thistory size = %llu\tavg = %.3f\tdips = %llu\tSampling[ %.3f, %.3f ] avg %.3f/%d\n",
             jitterStats.numSamples,

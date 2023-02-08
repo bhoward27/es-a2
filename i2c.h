@@ -1,3 +1,4 @@
+// Provides functions to enable and write to an I2C bus.
 #ifndef I2C_H_
 #define I2C_H_
 

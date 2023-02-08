@@ -10,7 +10,10 @@ OFLAGS = $(CFLAGS) -c
 
 OBJS = main.o utils.o log.o adc.o i2c.o gpio.o digit_display.o adc_buffer.o light_meter.o potentiometer.o adc_stats.o console.o light_sampler.o shutdown.o periodTimer.o udp_server.o
 
-all: light_sampler
+all: light_sampler noworky
+
+noworky: noworky.c
+	$(CC_C) -Wall -g -std=c99 -D _POSIX_C_SOURCE=200809L -Werror noworky.c -o $(OUT_DIR)/noworky
 
 light_sampler: $(OBJS)
 	$(CC_C) $(CFLAGS) $(OBJS) -o $(OUT_DIR)/light_sampler

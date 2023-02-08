@@ -1,4 +1,6 @@
-// Implements a circular buffer to hold ADC values. Can change size at will.
+// Implements a thread-safe circular buffer to hold values taken from the ADC.
+// Can change size of the buffer at will with resize function.
+// The thread-safe-ness is implemented by using coarse-grained synchronization with a mutex.
 #ifndef ADC_BUFFER_H_
 #define ADC_BUFFER_H_
 
@@ -20,7 +22,10 @@ typedef struct {
     pthread_mutex_t mutex;
 } AdcBuffer;
 
+// Not thread-safe.
 void AdcBuffer_init(AdcBuffer* pBuffer, uint64 n);
+
+// Thread-safe.
 uint64 AdcBuffer_getSize(AdcBuffer* pBuffer);
 uint64 AdcBuffer_getMaxSize(AdcBuffer* pBuffer);
 adc_in* AdcBuffer_getSamples(AdcBuffer* pBuffer, uint64* outNumSamples);
@@ -29,7 +34,11 @@ double AdcBuffer_getCurrentMean(AdcBuffer* pBuffer);
 void AdcBuffer_resize(AdcBuffer* pBuffer, uint64 m);
 adc_in AdcBuffer_get(AdcBuffer* pBuffer, uint64 i);
 void AdcBuffer_add(AdcBuffer* pBuffer, adc_in x);
+
+// Not thread-safe.
 void AdcBuffer_cleanup(AdcBuffer* pBuffer);
+
+// Not thread-safe. For debugging.
 void AdcBuffer_printProperties(AdcBuffer* pBuffer);
 void AdcBuffer_printArray(AdcBuffer* pBuffer);
 void AdcBuffer_print(AdcBuffer* pBuffer);

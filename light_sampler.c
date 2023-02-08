@@ -11,6 +11,8 @@
 static bool initialized = false;
 static pthread_t thread;
 
+static void* LightSampler_run(void* args);
+
 void LightSampler_init(AdcBuffer* pBuffer)
 {
     if (!initialized) {

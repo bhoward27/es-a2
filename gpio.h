@@ -1,3 +1,5 @@
+// This modules provides functions to interface with GPIO (General Purpose Input and Output).
+// This includes functions to prepare the GPIO pins for proper use, as well as reading and writing from/to them.
 #ifndef GPIO_H_
 #define GPIO_H_
 

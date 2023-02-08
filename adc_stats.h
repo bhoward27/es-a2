@@ -1,3 +1,5 @@
+// Implements the AdcStats_dips() functions, which calclulates the number of dips below avg value in samples that
+// occurred. Uses hysteresis to manage the noise which will likely come from the ADC.
 #ifndef ADC_STATS_H
 #define ADC_STATS_H
 

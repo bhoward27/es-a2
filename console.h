@@ -1,3 +1,5 @@
+// This module prints information regarding the ADC buffer passed in.
+// It also resizes the buffer based on current potentiometer input.
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 

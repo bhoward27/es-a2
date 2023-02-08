@@ -1,3 +1,4 @@
+// Provides the Potentiometer_read() function, which does exactly what you think it does.
 #ifndef POTENTIOMETER_H_
 #define POTENTIOMETER_H_
 

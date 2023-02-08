@@ -1,3 +1,4 @@
+// Program entry point -- all the magic starts here.
 #include <stdio.h>
 #include <stdatomic.h>
 
